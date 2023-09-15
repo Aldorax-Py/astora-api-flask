@@ -1,6 +1,8 @@
 from app.routes.users import users_route
 from app.routes.auth import auth_route
 from app.routes.services import services_route
+from app.routes.admin import admin_route
+from app.routes.logs import logs_route
 from flask import Flask, jsonify, send_from_directory, session
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -30,6 +32,8 @@ database.init_app(app)
 app.register_blueprint(users_route)
 app.register_blueprint(auth_route)
 app.register_blueprint(services_route)
+app.register_blueprint(admin_route)
+app.register_blueprint(logs_route)
 
 
 @app.after_request

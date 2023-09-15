@@ -106,11 +106,11 @@ class Transaction(database.Model):
     id = database.Column(database.String(36), primary_key=True,
                          default=lambda: str(uuid.uuid4()), unique=True)
     user_id = database.Column(database.String(36), database.ForeignKey(
-        'user.id'), nullable=False, unique=True, index=True)
+        'user.id'), nullable=False, index=True)
     user_first_name = database.Column(database.String(36), database.ForeignKey(
-        'user.first_name'), nullable=False, unique=True, index=True)
+        'user.first_name'), nullable=False, index=True)
     user_last_name = database.Column(database.String(36), database.ForeignKey(
-        'user.last_name'), nullable=False, unique=True, index=True)
+        'user.last_name'), nullable=False, index=True)
     timestamp = database.Column(
         database.DateTime, default=datetime.utcnow, index=True, nullable=False)
     payment_amount = database.Column(database.Float, nullable=False)
@@ -142,10 +142,19 @@ class Services(database.Model):
 class ServiceLogs(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     user_id = database.Column(database.String(36), database.ForeignKey(
-        'user.id'), nullable=False, unique=True, index=True)
-    user_id = database.Column(database.String(36), database.ForeignKey(
-        'services.id'), nullable=False, unique=True, index=True)
+        'user.id'), nullable=False,  index=True)
+    service_name = database.Column(database.String(36), database.ForeignKey(
+        'services.name'), nullable=False, index=True)
     timestamp = database.Column(
         database.DateTime, default=datetime.utcnow, index=True, nullable=False)
-    message = database.Column(database.String, unique=True,
+    message = database.Column(database.String,
                               index=True, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "service_name": self.service_name,
+            "timestamp": self.timestamp.strftime("%A, %d %B, %Y"),
+            "message": self.message
+        }
