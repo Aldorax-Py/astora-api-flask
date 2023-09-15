@@ -59,8 +59,8 @@ class ApplicationConfig:
     # Lets work on our email settings
     MAIL_SERVER = 'smtp.elasticemail.com'
     MAIL_PORT = 2525
-    MAIL_USERNAME = 'support@enetworksagencybanking.com.ng'
-    MAIL_PASSWORD = "A2CDE2AB8EEE085BBF14DFF4D75315C7BF75"
+    MAIL_USERNAME = 'support@astora.finance'
+    MAIL_PASSWORD = ""
     MAIL_USE_TLS = True
 
     # We need to also customize our Jwt Expiration time for our access tokens.
