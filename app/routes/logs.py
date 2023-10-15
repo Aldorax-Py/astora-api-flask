@@ -11,7 +11,7 @@ logs_route = Blueprint("logs", __name__, url_prefix="/api/v1/logs")
 
 @logs_route.route("/get/all", methods=["GET"])
 @jwt_required()
-@require_role(["Admin"])
+# @require_role(["Admin"])
 def get_all_logs():
     logs = ServiceLogs.query.all()
     logs_list = []

@@ -2,6 +2,12 @@ from flask import jsonify, Blueprint
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.middleware.require_role import require_role
 from app.database.models.model import User, Services, database, ServiceLogs, Transaction
+import random
+
+
+def create_random_TRX_REF():
+    return ''.join(random.choices('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', k=6))
+
 
 users_route = Blueprint("users", __name__, url_prefix="/api/v1/users")
 
@@ -37,19 +43,19 @@ def get_users(service_id):
             status=True
         )
 
-        database.session.add(new_transaction)
-        database.session.commit()
-
-        log_messgae = f"User {user.first_name} {user.last_name} used the service: {service.name}. User paid {service.price} successfully."
-
         new_service_log = ServiceLogs(
             user_id=user.id,
             service_name=service.name,
             message=log_messgae
         )
 
+        database.session.add(new_transaction)
+        database.session.commit()
         database.session.add(new_service_log)
         database.session.commit()
+
+        log_messgae = f"User {user.first_name} {user.last_name} used the service: {service.name}. User paid {service.price} successfully."
+
         return jsonify(message=f"{user.first_name} {user.last_name} has used {service.name}")
     else:
         return jsonify(message=f"{user.first_name} {user.last_name} is logged in")
@@ -61,3 +67,19 @@ def get_users(service_id):
 def get_user(user_id):
     # Your route logic here
     return jsonify({"message": f"Get user with ID {user_id}"})
+
+
+@users_route.route("/tokens", methods=["POST"])
+@jwt_required()
+@require_role(["User"])
+def give_tokens():
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+
+    if user is None:
+        return jsonify(message="User does not exist.")
+
+    user.tokens += 10000
+    database.session.commit()
+
+    return jsonify(message=f"{user.first_name} {user.last_name} has been given 10 tokens.", tokens=user.tokens)

@@ -107,10 +107,10 @@ class Transaction(database.Model):
                          default=lambda: str(uuid.uuid4()), unique=True)
     user_id = database.Column(database.String(36), database.ForeignKey(
         'user.id'), nullable=False, index=True)
-    user_first_name = database.Column(database.String(36), database.ForeignKey(
-        'user.first_name'), nullable=False, index=True)
-    user_last_name = database.Column(database.String(36), database.ForeignKey(
-        'user.last_name'), nullable=False, index=True)
+    # Modify this to match the type in User
+    user_first_name = database.Column(database.String(50), nullable=False)
+    # Modify this to match the type in User
+    user_last_name = database.Column(database.String(50), nullable=False)
     timestamp = database.Column(
         database.DateTime, default=datetime.utcnow, index=True, nullable=False)
     payment_amount = database.Column(database.Float, nullable=False)
@@ -158,3 +158,24 @@ class ServiceLogs(database.Model):
             "timestamp": self.timestamp.strftime("%A, %d %B, %Y"),
             "message": self.message
         }
+
+
+class GeneralLogs(database.Model):
+    id = database.Column(database.Integer, primary_key=True)
+    user_id = database.Column(database.String(36), database.ForeignKey(
+        'user.id'), nullable=False,  index=True)
+    log_type = database.Column(database.String(36), database.ForeignKey(
+        'logs.name'), nullable=False, index=True)
+    timestamp = database.Column(
+        database.DateTime, default=datetime.utcnow, index=True, nullable=False)
+    message = database.Column(database.String,
+                              index=True, nullable=False)
+
+
+class Logs(database.Model):
+    id = database.Column(database.Integer, primary_key=True)
+    name = database.Column(
+        database.String(50), unique=True, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"<Logs: {self.role_name}>"
