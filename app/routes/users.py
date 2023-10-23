@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.middleware.require_role import require_role
-from app.database.models.model import User, Services, database, ServiceLogs, Transaction
+from app.database.models.model import User, Services, database, ServiceLog, Transaction, TransactionLog
 import random
 
 
@@ -43,7 +43,7 @@ def get_users(service_id):
             status=True
         )
 
-        new_service_log = ServiceLogs(
+        new_service_log = ServiceLog(
             user_id=user.id,
             service_name=service.name,
             message=log_messgae

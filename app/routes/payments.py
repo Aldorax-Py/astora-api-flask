@@ -1,6 +1,6 @@
 from flask import jsonify, Blueprint, render_template, request
 import requests
-from app.database.models.model import User, OTP, Logs, Transaction
+from app.database.models.model import User, OTP, Transaction
 import os
 from app.database.models.model import database
 from flask_mail import Message
@@ -28,7 +28,7 @@ def generate_transaction_Ref():
     return Transaction_Ref
 
 
-@payment_route.route("/purchase-token", methods=["POST"])
+@payment_route.route("/purchase-token", methods=["GET"])
 @jwt_required()
 def initialize_purchase():
 
@@ -101,52 +101,74 @@ def initialize_purchase():
         print("Payment initiation failed:", str(e))
 
 
-@payment_route.route('/verify_payment', methods=['POST'])
+@payment_route.route('/verify_payment', methods=['GET'])
 def verify_payment():
-    squad_api_key = "sandbox_sk_155f0280a804a1a1541f08eaba7abd38f2912b8237b0"
-    try:
-        # Get the 'reference' parameter from the URL
-        reference = request.args.get('reference')
+    SQUAD_SECRET_KEY = "sandbox_sk_155f0280a804a1a1541f08eaba7abd38f2912b8237b0"
+    transaction_ref = request.args.get('reference')
 
-        if not reference:
-            return jsonify({'error': 'Reference parameter is missing'}), 400
+    if not transaction_ref:
+        return jsonify({'message': 'Transaction reference is missing'}), 400
 
-        # Define the Squad API endpoint for transaction verification
-        api_endpoint = f"https://sandbox-api-d.squadco.com/transaction/verify/{reference}"
+    # Define the Squad API endpoint for verifying a transaction
+    squad_api_url = f'https://sandbox-api-d.squadco.com/transaction/verify/{transaction_ref}'
 
-        # Set up the headers with the API key for authentication
-        headers = {
-            'Authorization': f'Bearer {squad_api_key}'
-        }
+    # Set up the headers with the Authorization key
+    headers = {'Authorization': f'Bearer {SQUAD_SECRET_KEY}'}
 
-        # Make a GET request to verify the transaction
-        response = requests.get(api_endpoint, headers=headers)
+    # Send a GET request to Squad's API for transaction verification
+    response = requests.get(squad_api_url, headers=headers)
 
+    if response.status_code == 200:
+        # Transaction is valid, process the response data
         response_data = response.json()
-        amount = response_data.get('data', {}).get('transaction_amount')
 
-        if response.status_code == 200:
-            # Update the payment status in the database
-            transaction = Transaction.query.filter_by(
-                transaction_reference=reference).first()
+        transaction_data = response_data.get("data", {})
 
-            if transaction:
-                user_id = transaction.user_id
-                print(user_id)
-                user = User.query.filter_by(id=user_id).first()
-                transaction.status = True
-                user.tokens = float(amount)
+        # Check the email and amount in response_data and confirm the payment
+        email = transaction_data.get("email")
+        payment_amount = transaction_data.get("transaction_amount")
+
+        # Check the email and amount to confirm the payment
+        if email and payment_amount:
+            # Find the user with the given email
+            user = User.query.filter_by(email=email).first()
+
+            if user:
+                # Calculate the number of tokens based on the payment amount (e.g., multiplying by 10)
+                tokens = payment_amount * 10
+
+                # Update the user's token balance
+                user.tokens += tokens
+
+                # Create a new transaction record
+                transaction = Transaction(
+                    user_id=user.id,
+                    user_first_name=user.first_name,
+                    user_last_name=user.last_name,
+                    payment_amount=payment_amount,
+                    transaction_reference=transaction_ref,
+                    status=True  # Set status to True to indicate a successful transaction
+                )
+
+                # Commit changes to the database
+                database.session.add(transaction)
                 database.session.commit()
 
-                # Respond with a success message
-                return jsonify({'message': 'Payment verified and status updated successfully'})
+                # Return a response confirming the payment
+                response_message = {
+                    'message': 'Payment confirmed',
+                    'tokens_earned': tokens
+                }
+                return jsonify(response_message), 200
             else:
-                return jsonify(message="No transaction like this")
+                return jsonify({'message': 'User not found'}), 400
+        else:
+            return jsonify({'message': 'Missing email or payment amount in response data'}), 400
 
-        # Respond with an error message if verification fails
-        return jsonify({'error': 'Transaction verification failed'}), 400
+    elif response.status_code == 400:
+        # Invalid transaction reference
+        return jsonify({'message': 'Invalid transaction reference'}), 400
+    else:
+        # Handle other status codes as needed
+        return jsonify({'message': 'Transaction verification failed'}), 500
 
-    except Exception as e:
-        # Handle any exceptions that may occur during the verification process
-        print("Transaction verification error:", str(e))
-        return jsonify({'error': 'Transaction verification error'}), 500

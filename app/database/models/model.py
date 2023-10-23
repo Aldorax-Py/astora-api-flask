@@ -139,43 +139,90 @@ class Services(database.Model):
         }
 
 
-class ServiceLogs(database.Model):
-    id = database.Column(database.Integer, primary_key=True)
+class TransactionLog(database.Model):
+    id = database.Column(database.String(36), primary_key=True,
+                         default=lambda: str(uuid.uuid4()), unique=True)
     user_id = database.Column(database.String(36), database.ForeignKey(
-        'user.id'), nullable=False,  index=True)
-    service_name = database.Column(database.String(36), database.ForeignKey(
-        'services.name'), nullable=False, index=True)
+        'user.id'), nullable=False, index=True)
+    user = database.relationship('User', backref='transaction_logs')
     timestamp = database.Column(
         database.DateTime, default=datetime.utcnow, index=True, nullable=False)
-    message = database.Column(database.String,
-                              index=True, nullable=False)
+    transaction_reference = database.Column(
+        database.String(36), nullable=False)
+    status = database.Column(database.String(20), nullable=False)
+    amount = database.Column(database.Float, nullable=False)
+
+
+class GeneralLog(database.Model):
+    id = database.Column(database.String(36), primary_key=True,
+                         default=lambda: str(uuid.uuid4()), unique=True)
+    user_id = database.Column(database.String(
+        36), database.ForeignKey('user.id'), index=True)
+    user = database.relationship('User', backref='general_logs')
+    timestamp = database.Column(
+        database.DateTime, default=datetime.utcnow, index=True, nullable=False)
+    message = database.Column(database.String(255), nullable=False)
 
     def to_dict(self):
         return {
             "id": self.id,
-            "user_id": self.user_id,
-            "service_name": self.service_name,
-            "timestamp": self.timestamp.strftime("%A, %d %B, %Y"),
+            "user_id": self.user_id,  # Include user_id if needed
+            "timestamp": self.timestamp,
             "message": self.message
         }
 
 
-class GeneralLogs(database.Model):
-    id = database.Column(database.Integer, primary_key=True)
-    user_id = database.Column(database.String(36), database.ForeignKey(
-        'user.id'), nullable=False,  index=True)
-    log_type = database.Column(database.String(36), database.ForeignKey(
-        'logs.name'), nullable=False, index=True)
+class ErrorLog(database.Model):
+    id = database.Column(database.String(36), primary_key=True,
+                         default=lambda: str(uuid.uuid4()), unique=True)
+    user_id = database.Column(database.String(
+        36), database.ForeignKey('user.id'), index=True)
+    user = database.relationship('User', backref='error_logs')
     timestamp = database.Column(
         database.DateTime, default=datetime.utcnow, index=True, nullable=False)
-    message = database.Column(database.String,
-                              index=True, nullable=False)
+    error_message = database.Column(database.String(255), nullable=False)
 
 
-class Logs(database.Model):
-    id = database.Column(database.Integer, primary_key=True)
-    name = database.Column(
-        database.String(50), unique=True, nullable=False)
+class ServiceLog(database.Model):
+    id = database.Column(database.String(36), primary_key=True,
+                         default=lambda: str(uuid.uuid4()), unique=True)
+    user_id = database.Column(database.String(
+        36), database.ForeignKey('user.id'), index=True)
+    user = database.relationship('User', backref='service_logs')
+    timestamp = database.Column(
+        database.DateTime, default=datetime.utcnow, index=True, nullable=False)
+    service_id = database.Column(database.Integer, nullable=False)
+    message = database.Column(database.String(255), nullable=False)
 
-    def __repr__(self) -> str:
-        return f"<Logs: {self.role_name}>"
+
+class UserActivityLog(database.Model):
+    id = database.Column(database.String(36), primary_key=True,
+                         default=lambda: str(uuid.uuid4()), unique=True)
+    user_id = database.Column(database.String(
+        36), database.ForeignKey('user.id'), index=True)
+    user = database.relationship('User', backref='activity_logs')
+    timestamp = database.Column(
+        database.DateTime, default=datetime.utcnow, index=True, nullable=False)
+    activity_type = database.Column(database.String(50), nullable=False)
+    description = database.Column(database.String(255), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            # "user_id": self.user_id,  # Include user_id if needed
+            "timestamp": self.timestamp.strftime("%A, %d %B, %Y"),
+            "message": self.description,
+            "activity_type": self.activity_type
+        }
+
+
+class SupportLog(database.Model):
+    id = database.Column(database.String(36), primary_key=True,
+                         default=lambda: str(uuid.uuid4()), unique=True)
+    user_id = database.Column(database.String(
+        36), database.ForeignKey('user.id'), index=True)
+    user = database.relationship('User', backref='support_logs')
+    timestamp = database.Column(
+        database.DateTime, default=datetime.utcnow, index=True, nullable=False)
+    support_request = database.Column(database.String(255), nullable=False)
+    response = database.Column(database.String(255))
