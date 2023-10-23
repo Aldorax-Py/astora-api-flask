@@ -1,0 +1,19 @@
+flask
+flask_cors
+flask_bcrypt
+flask_jwt_extended
+flask_session
+flask_mail
+flask_sqlalchemy
+sqlalchemy
+redis
+python-dotenv
+requests
+waitress
+gunicorn
+passlib
+cloudinary
+psycopg2
+flask_migrate
+pandas
+# dr isah saliyu
