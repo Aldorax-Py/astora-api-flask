@@ -20,11 +20,11 @@ class ApplicationConfig:
     # In this case we will use both. Local for testing and Hosted for prodcution deployment
 
     # For the Local
-    SESSION_REDIS = redis_client
+    # SESSION_REDIS = redis_client
 
     # For the Hosted server
-    # REDIS_URL = ""
-    # SESSION_REDIS = redis.from_url(REDIS_URL)
+    REDIS_URL = "rediss://red-cj1163k07spjv9picbh0:KIwT98MR5cnSExxxhBP6HkZ1ZW1924mt@oregon-redis.render.com:6379"
+    SESSION_REDIS = redis.from_url(REDIS_URL)
 
     # We need to set the redis as the session type so we can actually use it in our application
     SESSION_TYPE = "redis"
