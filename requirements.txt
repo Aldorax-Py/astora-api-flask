@@ -16,4 +16,5 @@ cloudinary
 psycopg2
 flask_migrate
 pandas
+uvicorn
 # dr isah saliyu
