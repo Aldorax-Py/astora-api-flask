@@ -10,7 +10,7 @@ from app.routes.auth import auth_route
 from app.routes.services import services_route
 from app.routes.admin import admin_route
 from app.routes.logs import logs_route
-from flask import Flask, jsonify, render_template, send_from_directory, session, got_request_exception
+from flask import Flask, jsonify, render_template, send_from_directory, session, got_request_exception, request
 from flask_cors import CORS
 from flask_migrate import Migrate
 # from flask_mail import Mail, Message
