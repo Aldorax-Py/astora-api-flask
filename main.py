@@ -75,10 +75,15 @@ app.register_blueprint(payment_route)
 
 @app.after_request
 def add_cors_headers(response):
-    # Replace with your frontend domain
-    # frontend_domain = 'http://localhost:3000'
-    frontend_domain = 'https://www.astorafinance.com'
-    response.headers['Access-Control-Allow-Origin'] = frontend_domain
+    frontend_domains = [
+        'http://localhost:3000',
+        'https://www.astorafinance.com',
+        'https://astorafinance.com'
+    ]
+
+    origin = request.headers.get('Origin')
+    if origin in frontend_domains:
+        response.headers['Access-Control-Allow-Origin'] = origin
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, PATCH'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
     response.headers['Access-Control-Allow-Credentials'] = 'true'
