@@ -23,7 +23,7 @@ class ApplicationConfig:
     # SESSION_REDIS = redis_client
 
     # For the Hosted server
-    REDIS_URL = "rediss://red-cj1163k07spjv9picbh0:KIwT98MR5cnSExxxhBP6HkZ1ZW1924mt@oregon-redis.render.com:6379"
+    REDIS_URL = "redis://default:WrwSdqAH5iITwzhp8APu@containers-us-west-207.railway.app:6006"
     SESSION_REDIS = redis.from_url(REDIS_URL)
 
     # We need to set the redis as the session type so we can actually use it in our application
@@ -41,10 +41,10 @@ class ApplicationConfig:
     DB = os.environ.get("POSTGRES_DB")
 
     # For development
-    SQLALCHEMY_DATABASE_URI = r"sqlite:///./db.sqlite"
+    # SQLALCHEMY_DATABASE_URI = r"sqlite:///./db.sqlite"
 
     # For Production
-    # SQLALCHEMY_DATABASE_URI = f"{DB}"
+    SQLALCHEMY_DATABASE_URI = f"{DB}"
 
     # For Production
     # PLANETSCALE_MYSQL_URI = os.environ.get("PLANETSCALE_MYSQL_URI")
